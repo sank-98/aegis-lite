@@ -73,10 +73,19 @@ def compute_divergence_score(
     l2 = l2_norm_distance(acts_clean, acts_backdoor)
     kl = kl_divergence_score(acts_clean, acts_backdoor)
 
+    # Scaling constants for soft normalisation of each metric to [0, 1].
+    # L2_SCALE_FACTOR: L2 values rarely exceed 30 % of the reference norm
+    # in benign perturbations, so we dampen the L2 contribution to avoid it
+    # drowning out the MAD and KL terms.
+    L2_SCALE_FACTOR = 0.3
+    # KL_CAP: Average per-feature KL divergences above ~5 nats indicate
+    # near-orthogonal distributions; we saturate the score at this threshold.
+    KL_CAP = 5.0
+
     # Normalize each metric to [0, 1] using soft caps
     mad_norm = min(mad / (np.abs(acts_clean).mean() + 1e-8), 1.0)
-    l2_norm = min(l2 / (np.linalg.norm(acts_clean.mean(axis=0)) + 1e-8), 1.0) * 0.3
-    kl_norm = min(kl / 5.0, 1.0)
+    l2_norm = min(l2 / (np.linalg.norm(acts_clean.mean(axis=0)) + 1e-8), 1.0) * L2_SCALE_FACTOR
+    kl_norm = min(kl / KL_CAP, 1.0)
 
     divergence_score = float(np.clip((mad_norm + l2_norm + kl_norm) / 3.0, 0.0, 1.0))
 

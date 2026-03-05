@@ -54,7 +54,7 @@ def get_dataloaders():
     transform = transforms.Compose([
         transforms.ToTensor(),
         # CIFAR-10 channel-wise mean and std (computed over the full training set)
-        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261)),
+        transforms.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.2615)),
     ])
     base_train = torchvision.datasets.CIFAR10(root=os.path.join(RESULTS_DIR, "data"), train=True,
                                                download=True, transform=transform)
